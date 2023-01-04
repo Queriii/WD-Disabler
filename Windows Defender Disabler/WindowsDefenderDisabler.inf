@@ -1,0 +1,77 @@
+;
+; WindowsDefenderDisabler.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=WindowsDefenderDisabler.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+WindowsDefenderDisabler_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+WindowsDefenderDisabler.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%WindowsDefenderDisabler.DeviceDesc%=WindowsDefenderDisabler_Device, Root\WindowsDefenderDisabler ; TODO: edit hw-id
+
+[WindowsDefenderDisabler_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+WindowsDefenderDisabler.sys
+
+;-------------- Service installation
+[WindowsDefenderDisabler_Device.NT.Services]
+AddService = WindowsDefenderDisabler,%SPSVCINST_ASSOCSERVICE%, WindowsDefenderDisabler_Service_Inst
+
+; -------------- WindowsDefenderDisabler driver install sections
+[WindowsDefenderDisabler_Service_Inst]
+DisplayName    = %WindowsDefenderDisabler.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\WindowsDefenderDisabler.sys
+
+;
+;--- WindowsDefenderDisabler_Device Coinstaller installation ------
+;
+
+[WindowsDefenderDisabler_Device.NT.CoInstallers]
+AddReg=WindowsDefenderDisabler_Device_CoInstaller_AddReg
+CopyFiles=WindowsDefenderDisabler_Device_CoInstaller_CopyFiles
+
+[WindowsDefenderDisabler_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[WindowsDefenderDisabler_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[WindowsDefenderDisabler_Device.NT.Wdf]
+KmdfService =  WindowsDefenderDisabler, WindowsDefenderDisabler_wdfsect
+[WindowsDefenderDisabler_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "WindowsDefenderDisabler Installation Disk"
+WindowsDefenderDisabler.DeviceDesc = "WindowsDefenderDisabler Device"
+WindowsDefenderDisabler.SVCDESC = "WindowsDefenderDisabler Service"
